@@ -1,0 +1,270 @@
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import { View, ScrollView } from 'react-native';
+
+import CarouselControl from './CarouselControl';
+
+export default class Carousel extends Component {
+
+  static propTypes = {
+    ...ScrollView.propTypes,
+    autoPlay: PropTypes.bool, //是否开启轮播
+    interval: PropTypes.number, //每页停留时间
+    direction: PropTypes.oneOf(['forward', 'backward']), //轮播方向
+    startIndex: PropTypes.number, //起始页面编号，从0开始
+    loop: PropTypes.bool, //是否循环
+    control: PropTypes.oneOfType([PropTypes.bool, PropTypes.element]),
+    onChange: PropTypes.func, //(index, total) 页面改变时调用
+  };
+
+  static defaultProps = {
+    ...ScrollView.defaultProps,
+    horizontal: true, //修改为false是纵向滚动
+    pagingEnabled: true,
+    showsHorizontalScrollIndicator: false,
+    showsVerticalScrollIndicator: false,
+    alwaysBounceHorizontal: false,
+    alwaysBounceVertical: false,
+    // bounces: false,
+    automaticallyAdjustContentInsets: false,
+    scrollEventThrottle: 200,
+    scrollsToTop: false,
+
+    autoPlay: true,
+    interval: 3000,
+    direction: 'forward',
+    startIndex: 0,
+    loop: true,
+    control: false,
+  };
+
+  static Control = CarouselControl;
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      width: 0,
+      height: 0,
+      pageIndex: 0,
+    };
+    this.cardIndex = null;
+    this.initByProps();
+    this.setupTimer();
+  }
+
+  componentDidMount() {
+    super.componentDidMount && super.componentDidMount();
+    setTimeout(() => this.scrollToCard(this.cardIndex, false), 50);
+  }
+
+  componentWillUnmount() {
+    super.componentWillUnmount && super.componentWillUnmount();
+    this.removeTimer();
+  }
+
+  componentDidUpdate(prevProps) {
+    let {children, autoPlay, direction, startIndex, loop} = this.props;
+    let pageCount = children ? (children instanceof Array ? children.length : 1) : 0;
+    if (pageCount != this.pageCount
+      || autoPlay != prevProps.autoPlay
+      || direction != prevProps.direction
+      || startIndex != prevProps.startIndex
+      || loop != prevProps.loop) {
+      this.initByProps();
+      this.setupTimer();
+    }
+  }
+
+  //滚动到指定页
+  scrollToPage(index, animated = true) {
+    this.scrollToCard(this.loop ? index + 1 : index, animated);
+  }
+
+  //滚动到下一页
+  scrollToNextPage(animated = true) {
+    this.scrollToNextCard(animated);
+  }
+
+  //初始化轮播参数
+  initByProps() {
+    let {children, autoPlay, direction, startIndex, loop} = this.props;
+
+    //页数
+    this.pageCount = children ? (children instanceof Array ? children.length : 1) : 0;
+
+    let multiPage = this.pageCount > 1;
+
+    //是否轮播
+    this.autoPlay = autoPlay && multiPage;
+
+    //是否循环
+    this.loop = loop && multiPage;
+
+    //是否正向轮播（从左往右顺序轮播，卡片从右往左滚动）
+    this.forward = direction === 'forward';
+
+    //卡片数量，card定义：轮播中的页面序列，如为循环播放则首尾各多一页，如页面为0-1-2，则cards为2-0-1-2-0
+    this.cardCount = multiPage && this.loop ? this.pageCount + 2 : this.pageCount;
+    if (this.cardIndex === null || this.cardIndex >= this.cardCount)
+      this.cardIndex = multiPage && this.loop ? startIndex + 1 : startIndex;
+
+    //下一页卡片步进
+    this.step = this.forward ? 1 : -1;
+  }
+
+  //设置定时器，开启轮播时在interval毫秒之后滚动到下一卡片
+  setupTimer() {
+    this.removeTimer();
+    if (!this.autoPlay) return;
+    this.timer = setTimeout(() => {
+      this.timer = null;
+      this.scrollToNextCard();
+    }, this.props.interval);
+  }
+
+  //删除定时器
+  removeTimer() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+  }
+
+  //滚动到指定卡片
+  scrollToCard(cardIndex, animated = true) {
+    let {width, height} = this.state;
+    if (cardIndex < 0) cardIndex = 0;
+    else if (cardIndex >= this.cardCount) cardIndex = this.cardCount - 1;
+    if (this.scrollView) {
+      if (this.props.horizontal)
+        this.scrollView.scrollTo({x: width * cardIndex, y: 0, animated: animated});
+      else this.scrollView.scrollTo({x: 0, y: height * cardIndex, animated: animated});      
+    }
+  }
+
+  //滚动到下一张卡片
+  scrollToNextCard(animated = true) {
+    this.scrollToCard(this.cardIndex + this.step, animated);
+  }
+
+  //修改当前卡片编号
+  changeCardIndex(cardIndex) {
+    if (cardIndex == this.cardIndex) return;
+    this.cardIndex = cardIndex;
+    let total = this.pageCount;
+    let pageIndex = this.loop ? cardIndex - 1 : cardIndex;
+    if (pageIndex < 0) pageIndex = total - 1;
+    else if (pageIndex >= total) pageIndex = 0;
+    this.setState({pageIndex});
+    this.props.onChange && this.props.onChange(pageIndex, total);
+  }
+
+  //横向滚动事件
+  onHorizontalScroll(e) {
+    let {width} = this.state;
+    let {x} = e.nativeEvent.contentOffset;
+    let cardIndex =  Math.round(x / width);
+
+    if (this.loop) {
+      if (cardIndex <= 0 && x <= 0) {
+        cardIndex = this.cardCount - 2;
+        this.scrollToCard(cardIndex, false);
+      } else if (cardIndex >= this.cardCount - 1 && x >= (this.cardCount - 1) * width) {
+        cardIndex = 1;
+        this.scrollToCard(cardIndex, false);
+      }
+    }
+
+    this.changeCardIndex(cardIndex);
+    this.setupTimer();
+  }
+
+  //纵向滚动事件
+  onVerticalScroll(e) {
+    let {height} = this.state;
+    let {y} = e.nativeEvent.contentOffset;
+    let cardIndex =  Math.round(y / height);
+
+    if (this.loop) {
+      if (cardIndex <= 0 && y <= 0) {
+        cardIndex = this.cardCount - 2;
+        this.scrollToCard(cardIndex, false);
+      } else if (cardIndex >= this.cardCount - 1 && y >= (this.cardCount - 1) * height) {
+        cardIndex = 1;
+        this.scrollToCard(cardIndex, false);
+      }
+    }
+
+    this.changeCardIndex(cardIndex);
+    this.setupTimer();
+  }
+
+  //页面滚动事件
+  onScroll(e) {
+    if (this.state.width == 0 || this.state.height == 0) return;
+    this.props.horizontal ? this.onHorizontalScroll(e) : this.onVerticalScroll(e);
+    this.props.onScroll && this.props.onScroll(e);
+  }
+
+  //布局变更时修改页面宽度、高度，刷新显示
+  onLayout(e) {
+    this.setState({
+      width: e.nativeEvent.layout.width,
+      height: e.nativeEvent.layout.height,
+    });
+    this.props.onLayout && this.props.onLayout(e);
+  }
+
+  //渲染卡片列表
+  renderCards() {
+    let {width, height} = this.state;
+    let {children} = this.props;
+    if (width <= 0 || height <= 0 || !children) return null;
+    if (!(children instanceof Array)) children = [children];
+    let cards = [];
+    let cardStyle = {width: width, height: height, overflow: 'hidden'};
+    this.loop && cards.push(
+      <View style={cardStyle} key={'card-head'}>{children[children.length - 1]}</View>
+    );
+    children.map((item, index) => cards.push(
+      <View style={cardStyle} key={'card' + index}>{item}</View>
+    ));
+    this.loop && cards.push(
+      <View style={cardStyle} key={'card-tail'}>{children[0]}</View>
+    );
+    return cards;
+  }
+
+  render() {
+    let {style, children, horizontal, contentContainerStyle, control, onScroll, onLayout, onChange, direction, ...others} = this.props;
+    let {width, height, pageIndex} = this.state;
+    if (width > 0 && height > 0) {
+      let fixStyle;
+      if (horizontal) fixStyle = {width: width * this.cardCount, height: height};
+      else fixStyle = {width: width, height: height * this.cardCount};
+      contentContainerStyle = [].concat(contentContainerStyle).concat(fixStyle);
+    }
+    if (React.isValidElement(control)) {
+      control = React.cloneElement(control, {index: pageIndex, total: this.pageCount, carousel: this});
+    } else if (control) {
+      control = <this.constructor.Control index={pageIndex} total={this.pageCount} carousel={this} />;
+    }
+    return (
+      <View style={[style, {alignItems: 'stretch'}, {position: 'relative'}]}>
+        <ScrollView
+          style={{flex: 1}}
+          horizontal={horizontal}
+          contentContainerStyle={contentContainerStyle}
+          {...others}
+          ref={el => (this.scrollView = el)}
+          onScroll={(e) => this.onScroll(e)}
+          onLayout={(e) => this.onLayout(e)}
+        >
+          {this.renderCards()}
+        </ScrollView>
+        {control}
+      </View>
+    );
+  }
+
+}

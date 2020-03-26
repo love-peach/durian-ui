@@ -1,0 +1,38 @@
+{
+  "name": "durain-ui",
+  "version": "0.0.1",
+  "description": "## 一套拿来就用的 ReactNative 组件库",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react-native",
+    "components",
+    "ui",
+    "unit"
+  ],
+  "author": "zhangjinpei",
+  "license": "ISC",
+  "dependencies": {
+    "react-native-linear-gradient": "^2.5.6",
+    "react-native-root-siblings": "^4.0.6"
+  },
+  "directories": {
+    "example": "example"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/love-peach/react-native-unit-zjp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/love-peach/react-native-unit-zjp/issues"
+  },
+  "homepage": "https://github.com/love-peach/react-native-unit-zjp#readme",
+  "files": [
+    "index.js",
+    "README.md",
+    "src"
+  ]
+}
