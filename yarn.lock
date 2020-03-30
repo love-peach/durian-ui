@@ -2331,6 +2331,14 @@ duplexify@^3.6.0:
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
 
+durain-ui@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/durain-ui/-/durain-ui-1.0.0.tgz#6c641fde52166a61755d56d249b121f29e82838d"
+  integrity sha512-7YEaLGfBSO2gWrfHVLXBE1dM4zN4U/FGaQ1yFIj2fJ0BvCN2MPZOHNt99POx3silM5uRxahH/RRkxz541Cq3PQ==
+  dependencies:
+    react-native-linear-gradient "^2.5.6"
+    react-native-root-siblings "^4.0.6"
+
 each-props@^1.3.0:
   version "1.3.2"
   resolved "https://registry.npmjs.org/each-props/-/each-props-1.3.2.tgz#ea45a414d16dd5cfa419b1a81720d5ca06892333"

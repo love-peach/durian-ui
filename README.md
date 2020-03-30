@@ -1,5 +1,5 @@
 
-# react-native-unit-zjp
+# durain-ui
 
 一套拿来就用的 react-native 纯 js 组件。
 
