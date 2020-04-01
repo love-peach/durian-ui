@@ -65,7 +65,7 @@ export default class HomeScreen extends Component {
   render() {
     return (
       <ScrollView>
-        <Button type="primary" onPress={() => { this.getContacts(); }}>Contacts</Button>
+        <Button type="primary" onPress={() => { this.getContacts(); }}>get contacts</Button>
         {this.state.firstContact ? <Text>{JSON.stringify(this.state.firstContact)}</Text> : null}
         <Button type="primary" onPress={() => { this.openImagePickerAsync(); }}>Pick a photo</Button>
         {this.state.selectedImage ? <Image source={{ uri: this.state.selectedImage.localUri }} style={{ height: 300, width: 300 }} /> : null}
