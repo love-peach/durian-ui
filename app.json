@@ -1,13 +1,12 @@
 {
   "expo": {
-    "name": "Blank Template",
-    "slug": "durain-ui",
+    "name": "durain-ui",
+    "slug": "durain_ui",
     "privacy": "public",
     "sdkVersion": "36.0.0",
     "platforms": [
       "ios",
-      "android",
-      "web"
+      "android"
     ],
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,7 +23,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
-    }
+      "supportsTablet": true,
+      "bundleIdentifier": "com.suixingpay.expodemo",
+      "buildNumber": "1.0.0"
+    },
+    "description": "第一个expo项目",
+    "githubUrl": "https://github.com/love-peach/durian-ui"
   }
 }
