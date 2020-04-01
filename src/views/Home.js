@@ -30,11 +30,10 @@ export default class HomeScreen extends Component {
       });
 
       if (data.length > 0) {
-        const contact = data;
-        console.log(contact);
+        console.log(data[0]);
 
         this.setState({
-          firstContact: contact[0]
+          firstContact: data[0]
         });
       }
     } else {
